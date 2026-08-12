@@ -1,68 +1,109 @@
 # fanqie-tui
 
-一个用于番茄小说公开网页的轻量终端阅读器。它可以搜索书籍、查看书籍信息与目录，并在终端中阅读未锁定章节。
+一个 Go 编写的对话式番茄小说终端阅读器。启动后直接进入全屏 TUI，你可以像和本地 agent 对话一样搜索书籍、选择结果、打开目录并连续阅读。
+
+界面借鉴现代终端 agent 的信息层次：上方是消息流，中间会显示网络工具状态，底部是持续输入框和当前书籍进度。它不是 AI 服务，不调用 OpenAI API；自然语言命令由本地状态机解析。
 
 > 本项目不是番茄小说官方客户端，只读取无需登录即可访问的公开内容。付费或锁定章节不会尝试绕过限制；上游网页结构变化时，部分功能可能暂时失效。
 
-## 安装
+## 安装与更新
 
-需要 Python 3.10 或更高版本。在项目目录中执行：
+需要 Go 1.24.2 或更高版本：
 
 ```bash
-python -m venv .venv
-. .venv/bin/activate
-python -m pip install -e .
+git clone https://github.com/xjz6626/fanqie-tui.git
+cd fanqie-tui
+./install.sh
 ```
 
-也可以不安装，直接在源码目录运行：
+脚本会构建静态单文件二进制并原子安装到 `~/.local/bin/fanqie`。Fish 用户会自动配置本地 PATH；其他 Shell 如尚未包含该目录，脚本会给出提示。
+
+以后在仓库目录一条命令完成拉取和安装：
 
 ```bash
-PYTHONPATH=src python -m fanqie_tui --help
+./install.sh --update
 ```
 
-## 使用
-
-先搜索书籍并记下书籍 ID：
+如果工作区存在未提交修改，`--update` 会停止，不会覆盖本地内容。安装到其他目录：
 
 ```bash
-fanqie search "书名或作者"
+./install.sh --dir /自定义/目录
 ```
 
-查看详情和目录：
+仅构建而不安装：
 
 ```bash
-fanqie info <书籍ID>
-fanqie catalog <书籍ID>
-fanqie catalog <书籍ID> --start 51 --limit 50
+make build
+./build/fanqie
 ```
 
-读取单章需要目录中括号内的章节 ID：
+也可以直接安装到 Go 的二进制目录：
 
 ```bash
-fanqie read <章节ID>
-fanqie read <章节ID> --no-pager
+go install github.com/xjz6626/fanqie-tui/cmd/fanqie@latest
+fanqie
 ```
 
-交互式连续阅读：
+## 对话式使用
+
+直接启动：
 
 ```bash
-fanqie browse <书籍ID>
-fanqie browse <书籍ID> --chapter 10
+fanqie
 ```
 
-阅读时按回车或 `n` 前往下一章，`p` 返回上一章，`g` 跳转，`q` 退出。默认使用系统分页器显示正文；如果当前终端不适合分页，可加 `--no-pager`。
-
-所有命令都支持 `-h` 查看帮助。网络较慢时可以在子命令前调整超时：
+或者附带首条指令：
 
 ```bash
-fanqie --timeout 40 search "关键词"
+fanqie "搜索 三体"
+```
+
+进入界面后可以输入：
+
+```text
+搜索 三体
+打开 1
+从第 3 章开始读
+下一章
+上一章
+查看目录
+现在读到哪
+```
+
+在尚未打开书籍时，直接输入书名也会自动搜索。斜杠命令可作为精确后备：
+
+```text
+/search 三体
+/open 1
+/read 3
+/catalog
+/next
+/prev
+/status
+/clear
+/quit
+```
+
+快捷键：
+
+- `Enter`：发送消息
+- `Ctrl+J`：输入换行
+- `PageUp` / `PageDown` 或鼠标滚轮：滚动消息流
+- `Esc`：取消正在进行的网络请求
+- `Ctrl+C`：取消请求，再按一次退出；空闲时直接退出
+
+网络较慢时可以调整超时：
+
+```bash
+fanqie -timeout 45s
 ```
 
 ## 开发
 
 ```bash
-python -m pip install -e '.[dev]'
-pytest
+make test
+make vet
+make build
 ```
 
-代码将上游访问封装在 `NovelProvider` 接口后，终端层不依赖具体数据来源。网页解析失败会转换为简短的用户错误，而不是输出 Python 堆栈。
+项目分为三层：`internal/fanqie` 负责公开网页解析和字体解码，`internal/agent` 管理自然语言意图与阅读上下文，`internal/tui` 负责消息流、输入框和状态栏。
