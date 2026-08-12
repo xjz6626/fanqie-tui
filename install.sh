@@ -105,8 +105,12 @@ INSTALL_TEMP=""
 # receive a concise instruction instead of having their startup files edited.
 if [[ ":${PATH}:" != *":${INSTALL_DIR}:"* ]]; then
   if [[ "${SHELL:-}" == */fish ]] && command -v fish >/dev/null 2>&1; then
-    fish -c 'fish_add_path --path $argv[1]' "${INSTALL_DIR}"
-    echo "==> 已将 ${INSTALL_DIR} 加入 Fish PATH"
+    fish -c 'fish_add_path --universal $argv[1] >/dev/null 2>&1; or contains -- $argv[1] $fish_user_paths' "${INSTALL_DIR}"
+    if fish -c 'contains -- $argv[1] $fish_user_paths' "${INSTALL_DIR}"; then
+      echo "==> 已将 ${INSTALL_DIR} 加入 Fish PATH"
+    else
+      echo "警告：无法持久化 Fish PATH，请手动运行：fish_add_path ${INSTALL_DIR}" >&2
+    fi
   else
     echo "提示：请将 ${INSTALL_DIR} 加入 PATH。"
   fi
