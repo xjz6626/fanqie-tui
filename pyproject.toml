@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fanqie-tui"
+version = "0.1.0"
+description = "A terminal reader for public Fanqie Novel web pages"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "fanqie-tui contributors" }]
+dependencies = [
+  "click>=8.1",
+  "fonttools[woff]>=4.55",
+  "httpx>=0.27",
+  "lxml>=5.3",
+  "platformdirs>=4.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3"]
+
+[project.scripts]
+fanqie = "fanqie_tui.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
