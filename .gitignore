@@ -3,3 +3,12 @@
 /fanqie
 *.prof
 coverage.out
+
+# Browser session exports are credentials and must never be committed.
+fanqienovel.com_cookies.txt
+cookies.txt
+cookie.txt
+cooike.txt
+cooike
+session.cookie
+*_cookies.txt

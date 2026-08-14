@@ -1,5 +1,5 @@
 BINARY := build/fanqie
-VERSION ?= 0.2.0
+VERSION ?= 0.7.1
 GOFLAGS := -trimpath
 LDFLAGS := -s -w -X main.version=$(VERSION)
 CGO_ENABLED ?= 0

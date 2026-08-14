@@ -79,7 +79,7 @@ if [[ "${UPDATE}" == true ]]; then
   git -C "${SCRIPT_DIR}" pull --ff-only
 fi
 
-VERSION="${FANQIE_VERSION:-0.2.0}"
+VERSION="${FANQIE_VERSION:-0.7.1}"
 if command -v git >/dev/null 2>&1 && git -C "${SCRIPT_DIR}" rev-parse --short HEAD >/dev/null 2>&1; then
   VERSION="${VERSION}+$(git -C "${SCRIPT_DIR}" rev-parse --short HEAD)"
 fi
